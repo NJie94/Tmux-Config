@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+pass=0
+fail=0
+
+check() {
+  local desc="$1" cond="$2"
+  if eval "$cond"; then
+    printf 'PASS  %s\n' "$desc"
+    pass=$((pass + 1))
+  else
+    printf 'FAIL  %s\n' "$desc"
+    fail=$((fail + 1))
+  fi
+}
+
+is_symlink_into_repo() {
+  local path="$1" repo_rel="$2"
+  [[ -L "$path" ]] && [[ "$(readlink -f "$path")" == "$REPO_DIR/$repo_rel" ]]
+}
+
+check "tmux >= 3.2 installed" \
+  '[[ -n "$(command -v tmux)" ]] && [[ "$(tmux -V | grep -oE "[0-9]+" | head -1)" -ge 3 ]]'
+check "ghostty installed" 'command -v ghostty >/dev/null 2>&1'
+check "zsh installed" 'command -v zsh >/dev/null 2>&1'
+check "fzf installed" 'command -v fzf >/dev/null 2>&1'
+check "git installed" 'command -v git >/dev/null 2>&1'
+check "oh-my-tmux present" '[[ -d "$HOME/.local/share/oh-my-tmux" ]]'
+check "oh-my-zsh present" '[[ -d "$HOME/.oh-my-zsh" ]]'
+check "powerlevel10k theme installed" '[[ -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]]'
+check "zsh-autosuggestions plugin installed" '[[ -d "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]]'
+check "zsh-syntax-highlighting plugin installed" '[[ -d "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]]'
+
+# oh-my-tmux installs TPM plugins under dirname($TMUX_CONF)/plugins. This
+# repo's install.sh always symlinks ~/.config/tmux/tmux.conf, so that path is
+# always ~/.config/tmux/plugins for this setup.
+TMUX_PLUGINS_DIR="$HOME/.config/tmux/plugins"
+check "TPM present" "[[ -d \"$TMUX_PLUGINS_DIR/tpm\" ]]"
+check "tmux-sensible plugin installed" "[[ -d \"$TMUX_PLUGINS_DIR/tmux-sensible\" ]]"
+check "tmux-resurrect plugin installed" "[[ -d \"$TMUX_PLUGINS_DIR/tmux-resurrect\" ]]"
+check "tmux-continuum plugin installed" "[[ -d \"$TMUX_PLUGINS_DIR/tmux-continuum\" ]]"
+check "vim-tmux-navigator plugin installed" "[[ -d \"$TMUX_PLUGINS_DIR/vim-tmux-navigator\" ]]"
+
+check "~/.config/tmux/tmux.conf is a symlink to oh-my-tmux" \
+  '[[ -L "$HOME/.config/tmux/tmux.conf" ]] && [[ "$(readlink -f "$HOME/.config/tmux/tmux.conf")" == "$HOME/.local/share/oh-my-tmux/.tmux.conf" ]]'
+check "~/.config/tmux/tmux.conf.local is a symlink into the dotfiles repo" \
+  'is_symlink_into_repo "$HOME/.config/tmux/tmux.conf.local" "tmux/tmux.conf.local"'
+check "~/.config/ghostty/config.ghostty is a symlink into the dotfiles repo" \
+  'is_symlink_into_repo "$HOME/.config/ghostty/config.ghostty" "ghostty/config.ghostty"'
+check "~/.zshrc is a symlink into the dotfiles repo" \
+  'is_symlink_into_repo "$HOME/.zshrc" "zsh/zshrc"'
+check "~/.config/zsh/ghostty-tmux.zsh is a symlink into the dotfiles repo" \
+  'is_symlink_into_repo "$HOME/.config/zsh/ghostty-tmux.zsh" "zsh/ghostty-tmux.zsh"'
+check "~/.config/nvim exists and is a git checkout" '[[ -d "$HOME/.config/nvim/.git" ]]'
+check "tmux-sessionizer on PATH" 'command -v tmux-sessionizer >/dev/null 2>&1'
+check "~/.zshrc.local exists" '[[ -f "$HOME/.zshrc.local" ]]'
+check "tmux reports RGB/truecolor capability" 'tmux info 2>/dev/null | grep -q "Tc:"'
+
+printf '\n%d passed, %d failed\n' "$pass" "$fail"
+[[ $fail -eq 0 ]]
