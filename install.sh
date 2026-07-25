@@ -61,8 +61,12 @@ if ! command -v ghostty >/dev/null 2>&1; then
 fi
 
 font_installed() {
-  fc-list 2>/dev/null | grep -qi "JetBrainsMono Nerd Font" && return 0
-  [[ "$OS" == macos ]] && ls "$HOME/Library/Fonts" 2>/dev/null | grep -qi "JetBrainsMono" && return 0
+  # Plain grep (no -q) reads all of its input before exiting, so it never
+  # SIGPIPEs the producer mid-stream -- with `pipefail` on, a `grep -q` that
+  # quits early kills fc-list/ls with SIGPIPE and pipefail then reports that
+  # as a pipeline failure even though the match was found.
+  fc-list 2>/dev/null | grep -i "JetBrainsMono Nerd Font" >/dev/null && return 0
+  [[ "$OS" == macos ]] && ls "$HOME/Library/Fonts" 2>/dev/null | grep -i "JetBrainsMono" >/dev/null && return 0
   return 1
 }
 

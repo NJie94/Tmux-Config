@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 pass=0
 fail=0
 
@@ -56,7 +56,7 @@ check "~/.config/zsh/ghostty-tmux.zsh is a symlink into the dotfiles repo" \
 check "~/.config/nvim exists and is a git checkout" '[[ -d "$HOME/.config/nvim/.git" ]]'
 check "tmux-sessionizer on PATH" 'command -v tmux-sessionizer >/dev/null 2>&1'
 check "~/.zshrc.local exists" '[[ -f "$HOME/.zshrc.local" ]]'
-check "tmux reports RGB/truecolor capability" 'tmux info 2>/dev/null | grep -q "Tc:"'
+check "tmux configured for RGB/truecolor" 'tmux show -g terminal-features 2>/dev/null | grep "RGB" >/dev/null'
 
 printf '\n%d passed, %d failed\n' "$pass" "$fail"
 [[ $fail -eq 0 ]]
