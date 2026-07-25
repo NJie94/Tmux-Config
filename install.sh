@@ -21,6 +21,11 @@ detect_os() {
 OS="$(detect_os)"
 log "Detected OS: $OS"
 
+if [[ "$OS" == macos ]] && ! command -v brew >/dev/null 2>&1; then
+  warn "Homebrew is required on macOS but was not found. Install it from https://brew.sh and re-run this script."
+  exit 1
+fi
+
 linux_pkg_install() {
   if command -v apt-get >/dev/null 2>&1; then
     sudo apt-get update -y && sudo apt-get install -y "$@"
@@ -50,6 +55,8 @@ ensure_cmd tmux
 ensure_cmd zsh
 ensure_cmd git
 ensure_cmd fzf
+ensure_cmd curl
+ensure_cmd unzip
 
 if ! command -v ghostty >/dev/null 2>&1; then
   case "$OS" in
@@ -70,16 +77,23 @@ font_installed() {
   return 1
 }
 
+install_linux_font() {
+  mkdir -p "$HOME/.local/share/fonts"
+  curl -fLo /tmp/JetBrainsMono.zip \
+    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+  unzip -o /tmp/JetBrainsMono.zip -d "$HOME/.local/share/fonts" >/dev/null
+  fc-cache -f "$HOME/.local/share/fonts" >/dev/null 2>&1 || true
+}
+
 if ! font_installed; then
   log "Installing JetBrainsMono Nerd Font"
   case "$OS" in
     macos) brew install --cask font-jetbrains-mono-nerd-font ;;
     linux|wsl2)
-      mkdir -p "$HOME/.local/share/fonts"
-      curl -fLo /tmp/JetBrainsMono.zip \
-        https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
-      unzip -o /tmp/JetBrainsMono.zip -d "$HOME/.local/share/fonts" >/dev/null
-      fc-cache -f "$HOME/.local/share/fonts" >/dev/null 2>&1 || true
+      # Font is purely cosmetic -- a network hiccup, a renamed release
+      # asset, or missing curl/unzip shouldn't abort the whole install.
+      install_linux_font ||
+        warn "Failed to install JetBrainsMono Nerd Font; continuing without it. Install manually from https://www.nerdfonts.com/ if desired."
       ;;
   esac
 fi

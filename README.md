@@ -32,13 +32,21 @@ cd ~/dev/dotfiles
 ./install.sh
 ```
 
-Installs any missing `tmux`/`zsh`/`git`/`fzf`/Ghostty/JetBrainsMono Nerd Font
-via `apt` or `dnf` (asks for `sudo` as needed), sets up oh-my-zsh and
+Installs any missing `tmux`/`zsh`/`git`/`fzf`/JetBrainsMono Nerd Font via
+`apt` or `dnf` (asks for `sudo` as needed), sets up oh-my-zsh and
 oh-my-tmux, symlinks every config into place, and clones
 [`NJie94/nvim`](https://github.com/NJie94/nvim) to `~/.config/nvim` if it
 isn't already there. Restart Ghostty afterward.
 
+Ghostty itself installs automatically via `dnf` on Fedora. It is **not**
+yet in Debian/Ubuntu's standard `apt` repositories, so on those distros
+`install.sh` will warn instead of installing it — grab it manually from
+[ghostty.org/download](https://ghostty.org/download).
+
 ### macOS
+
+Requires [Homebrew](https://brew.sh) to already be installed —
+`install.sh` exits with an error pointing you there if `brew` isn't found.
 
 Same flow, via Homebrew:
 

@@ -1,7 +1,25 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-REPO_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+# Portable stand-in for GNU `readlink -f` (BSD readlink on macOS has no -f).
+# Manually resolves symlinks in a loop, then canonicalizes the containing
+# directory with `cd -P && pwd -P`, which is supported by both GNU and BSD.
+resolve_path() {
+  local target="$1" link dir base
+  while [[ -L "$target" ]]; do
+    link="$(readlink "$target")"
+    if [[ "$link" == /* ]]; then
+      target="$link"
+    else
+      target="$(dirname "$target")/$link"
+    fi
+  done
+  dir="$(cd -P "$(dirname "$target")" && pwd -P)"
+  base="$(basename "$target")"
+  printf '%s/%s\n' "$dir" "$base"
+}
+
+REPO_DIR="$(cd "$(dirname "$(resolve_path "${BASH_SOURCE[0]}")")/.." && pwd)"
 pass=0
 fail=0
 
@@ -18,7 +36,7 @@ check() {
 
 is_symlink_into_repo() {
   local path="$1" repo_rel="$2"
-  [[ -L "$path" ]] && [[ "$(readlink -f "$path")" == "$REPO_DIR/$repo_rel" ]]
+  [[ -L "$path" ]] && [[ "$(resolve_path "$path")" == "$REPO_DIR/$repo_rel" ]]
 }
 
 check "tmux >= 3.2 installed" \
@@ -44,7 +62,7 @@ check "tmux-continuum plugin installed" "[[ -d \"$TMUX_PLUGINS_DIR/tmux-continuu
 check "vim-tmux-navigator plugin installed" "[[ -d \"$TMUX_PLUGINS_DIR/vim-tmux-navigator\" ]]"
 
 check "~/.config/tmux/tmux.conf is a symlink to oh-my-tmux" \
-  '[[ -L "$HOME/.config/tmux/tmux.conf" ]] && [[ "$(readlink -f "$HOME/.config/tmux/tmux.conf")" == "$HOME/.local/share/oh-my-tmux/.tmux.conf" ]]'
+  '[[ -L "$HOME/.config/tmux/tmux.conf" ]] && [[ "$(resolve_path "$HOME/.config/tmux/tmux.conf")" == "$HOME/.local/share/oh-my-tmux/.tmux.conf" ]]'
 check "~/.config/tmux/tmux.conf.local is a symlink into the dotfiles repo" \
   'is_symlink_into_repo "$HOME/.config/tmux/tmux.conf.local" "tmux/tmux.conf.local"'
 check "~/.config/ghostty/config.ghostty is a symlink into the dotfiles repo" \
