@@ -1,0 +1,66 @@
+# Ghostty visual layer for Oh My Tmux.
+# Ghostty owns rendering; tmux owns sessions, windows, panes, and status.
+
+# Soft Catppuccin-inspired palette based on the previous WezTerm setup.
+background = #1f1f28
+foreground = #cdd6f4
+cursor-color = #f5e0dc
+cursor-text = #11111b
+selection-background = #45475a
+selection-foreground = #cdd6f4
+
+palette = 0=#0c0c0c
+palette = 1=#f38ba8
+palette = 2=#a6e3a1
+palette = 3=#f9e2af
+palette = 4=#89b4fa
+palette = 5=#cba6f7
+palette = 6=#94e2d5
+palette = 7=#cdd6f4
+palette = 8=#6c7086
+palette = 9=#eba0ac
+palette = 10=#a6e3a1
+palette = 11=#f9e2af
+palette = 12=#74c7ec
+palette = 13=#f5c2e7
+palette = 14=#89dceb
+palette = 15=#f2f2f2
+
+font-family = JetBrainsMono Nerd Font
+font-style = Medium
+font-size = 10.5
+
+cursor-style = block
+cursor-style-blink = true
+mouse-hide-while-typing = true
+
+# Comfortable spacing without wasting screen area.
+window-padding-x = 10
+window-padding-y = 8
+window-padding-balance = true
+
+# Keep one clean native title bar. tmux remains the only tab/window layer.
+window-decoration = auto
+window-theme = ghostty
+window-titlebar-background = #181825
+window-titlebar-foreground = #cdd6f4
+window-title-font-family = JetBrainsMono Nerd Font
+window-subtitle = false
+title = "Ghostty"
+
+confirm-close-surface = false
+scrollback-limit = 10000000
+shell-integration = detect
+
+# Start or attach to the main tmux session whenever Ghostty opens.
+# command = tmux new-session -A -s main
+command = zsh
+
+# Terminal-level shortcuts only; tmux handles panes and windows.
+keybind = performable:ctrl+shift+c=copy_to_clipboard
+keybind = performable:ctrl+shift+v=paste_from_clipboard
+keybind = ctrl+shift+f=start_search
+keybind = f11=toggle_fullscreen
+keybind = f12=inspector:toggle
+keybind = ctrl+shift+comma=reload_config
+keybind = ctrl+shift+period=open_config
