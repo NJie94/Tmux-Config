@@ -80,9 +80,10 @@ font_installed() {
 install_linux_font() {
   mkdir -p "$HOME/.local/share/fonts"
   curl -fLo /tmp/JetBrainsMono.zip \
-    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
-  unzip -o /tmp/JetBrainsMono.zip -d "$HOME/.local/share/fonts" >/dev/null
+    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip || return 1
+  unzip -o /tmp/JetBrainsMono.zip -d "$HOME/.local/share/fonts" >/dev/null || return 1
   fc-cache -f "$HOME/.local/share/fonts" >/dev/null 2>&1 || true
+  return 0
 }
 
 if ! font_installed; then

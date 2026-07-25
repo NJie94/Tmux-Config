@@ -5,8 +5,13 @@ set -uo pipefail
 # Manually resolves symlinks in a loop, then canonicalizes the containing
 # directory with `cd -P && pwd -P`, which is supported by both GNU and BSD.
 resolve_path() {
-  local target="$1" link dir base
+  local target="$1" link dir base depth=0
   while [[ -L "$target" ]]; do
+    depth=$((depth + 1))
+    if [[ $depth -gt 40 ]]; then
+      printf 'resolve_path: too many levels of symbolic links: %s\n' "$1" >&2
+      return 1
+    fi
     link="$(readlink "$target")"
     if [[ "$link" == /* ]]; then
       target="$link"
