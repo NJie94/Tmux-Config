@@ -1,6 +1,0 @@
-@echo off
-REM Launches Ghostty inside a specific WSL2 distribution.
-REM Replace DISTRO_NAME below with one line of output from:
-REM   wsl.exe --list --quiet
-set DISTRO_NAME=Ubuntu
-wsl.exe -d %DISTRO_NAME% -- ghostty
