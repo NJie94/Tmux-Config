@@ -1,7 +1,7 @@
 # dotfiles
 
-One tmux (oh-my-tmux) + zsh (oh-my-zsh) + Ghostty setup, kept in one repo and
-installed with a single script on Linux, macOS, or Windows (via WSL2).
+One tmux (oh-my-tmux) + zsh (oh-my-zsh) + WezTerm setup, kept in one repo and
+installed with a single script on Linux, macOS, or Windows.
 
 ## What's here
 
@@ -13,14 +13,19 @@ installed with a single script on Linux, macOS, or Windows (via WSL2).
   syntax highlighting), sourcing an OS-specific file and an untracked
   `~/.zshrc.local` for anything machine-specific or private.
 - `zsh/linux.zsh` / `zsh/macos.zsh` — OS-specific shell config.
-- `ghostty/config.ghostty` — Ghostty's visual layer (font, theme, padding);
-  tmux owns sessions/windows/panes/status.
+- `zsh/wezterm-tmux.zsh` — auto-attaches to the persistent `main` tmux
+  session whenever an interactive, local WezTerm shell opens.
 - `scripts/tmux-sessionizer` — fzf-based project/session picker.
 - `scripts/doctor.sh` — read-only health check for the whole setup.
 - `nvim/tmux-navigator.lua.example` — copy into a separately-managed nvim
   config to get seamless `Ctrl+h/j/k/l` nvim/tmux pane navigation.
-- `windows/ghostty-wsl.cmd.example` — launches Ghostty inside a named WSL2
-  distro from the Windows side.
+
+WezTerm's own visual config (font, theme, keybinds, tabs) lives in the
+separately-versioned [`NJie94/wezterm`](https://github.com/NJie94/wezterm)
+repo, cloned to `~/.config/wezterm` by `install.sh` — same pattern as
+[`NJie94/nvim`](https://github.com/NJie94/nvim). Neither is vendored here;
+`install.sh` only clones them if that path doesn't already exist and never
+touches an existing checkout.
 
 ## Install
 
@@ -32,16 +37,17 @@ cd ~/dev/dotfiles
 ./install.sh
 ```
 
-Installs any missing `tmux`/`zsh`/`git`/`fzf`/JetBrainsMono Nerd Font via
-`apt` or `dnf` (asks for `sudo` as needed), sets up oh-my-zsh and
+Installs any missing `tmux`/`zsh`/`git`/`fzf`/WezTerm/JetBrainsMono Nerd
+Font via `apt` or `dnf` (asks for `sudo` as needed), sets up oh-my-zsh and
 oh-my-tmux, symlinks every config into place, and clones
-[`NJie94/nvim`](https://github.com/NJie94/nvim) to `~/.config/nvim` if it
-isn't already there. Restart Ghostty afterward.
+[`NJie94/nvim`](https://github.com/NJie94/nvim) to `~/.config/nvim` and
+[`NJie94/wezterm`](https://github.com/NJie94/wezterm) to `~/.config/wezterm`
+if either isn't already there. Restart WezTerm afterward.
 
-Ghostty itself installs automatically via `dnf` on Fedora. It is **not**
+WezTerm itself installs automatically via `dnf` on Fedora. It is **not**
 yet in Debian/Ubuntu's standard `apt` repositories, so on those distros
 `install.sh` will warn instead of installing it — grab it manually from
-[ghostty.org/download](https://ghostty.org/download).
+[wezterm.org/installation](https://wezterm.org/installation).
 
 ### macOS
 
@@ -60,17 +66,20 @@ cd ~/dev/dotfiles
 `brew shellenv` and any Mac-only tool config) — fill it in as needed; it's
 sourced automatically by `zsh/zshrc` once present.
 
-### Windows (WSL2)
+### Windows
 
-Ghostty has no native Windows GUI; on Windows it always runs as the Linux
-build inside WSL2 + WSLg.
+Unlike Ghostty, WezTerm has a native Windows GUI build, so it no longer
+needs WSLg to run — but this setup's shell environment (tmux, zsh) still
+lives inside a WSL2 distro, and `NJie94/wezterm`'s config already launches
+straight into it.
 
 1. Install WSL2 and a Linux distro (e.g. Ubuntu) from an elevated PowerShell:
    `wsl --install`.
 2. Inside that distro, follow the **Linux** install steps above.
-3. From Windows, edit `windows/ghostty-wsl.cmd.example`: replace
-   `DISTRO_NAME` with a line from `wsl.exe --list --quiet`, then run it (or
-   save it as a `.cmd` shortcut) to launch Ghostty attached to that distro.
+3. On the Windows side, install WezTerm natively from
+   [wezterm.org/installation](https://wezterm.org/installation) (or
+   `winget install wez.wezterm`). No launcher script to edit or run — open
+   WezTerm and it attaches directly to the WSL2 distro.
 
 ## Keymap
 
@@ -85,10 +94,14 @@ Prefix: `Ctrl+Space`
 | `Ctrl+Space f` | Project/session picker (tmux-sessionizer) |
 | `Ctrl+h/j/k/l` (no prefix) | Move between tmux panes / nvim splits (vim-tmux-navigator) |
 
+WezTerm's own tab/pane/workspace keybinds (under its `SUPER+Space` leader)
+are documented in [`NJie94/wezterm`](https://github.com/NJie94/wezterm)'s
+own README.
+
 ## Verify
 
 ```sh
-~/.local/bin/ghostty-tmux-doctor
+~/.local/bin/wezterm-tmux-doctor
 ```
 
 Prints a pass/fail line for every dependency, plugin, and symlink this setup
