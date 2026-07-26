@@ -90,11 +90,12 @@ inside WSL.
    git clone https://github.com/NJie94/wezterm $env:USERPROFILE\.config\wezterm
    ```
 5. Make sure `TERM_PROGRAM` crosses the WSL boundary, so
-   `wezterm-tmux.zsh`'s auto-attach guard can see it. Check what `WSLENV`
-   is already set to first (`[System.Environment]::GetEnvironmentVariable('WSLENV','User')`
-   in PowerShell) and append to it rather than overwrite if it's non-empty:
+   `wezterm-tmux.zsh`'s auto-attach guard can see it. This appends to
+   `WSLENV` rather than overwriting it, in case something else already
+   set it:
    ```powershell
-   setx WSLENV "TERM_PROGRAM/u"
+   $existing = [System.Environment]::GetEnvironmentVariable('WSLENV','User')
+   setx WSLENV $(if ($existing) { "$existing:TERM_PROGRAM/u" } else { "TERM_PROGRAM/u" })
    ```
    Restart WezTerm after this for it to take effect.
 
