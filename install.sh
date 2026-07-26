@@ -58,12 +58,12 @@ ensure_cmd fzf
 ensure_cmd curl
 ensure_cmd unzip
 
-if ! command -v ghostty >/dev/null 2>&1; then
+if ! command -v wezterm >/dev/null 2>&1; then
   case "$OS" in
-    macos) brew install --cask ghostty ;;
-    linux) linux_pkg_install ghostty || warn "Install Ghostty manually: https://ghostty.org/download" ;;
-    wsl2) linux_pkg_install ghostty || warn "Install Ghostty manually inside this WSL2 distro: https://ghostty.org/download" ;;
-    *) warn "Unsupported OS; install Ghostty manually" ;;
+    macos) brew install --cask wezterm ;;
+    linux) linux_pkg_install wezterm || warn "Install WezTerm manually: https://wezterm.org/installation" ;;
+    wsl2) linux_pkg_install wezterm || warn "Install WezTerm manually inside this WSL2 distro: https://wezterm.org/installation" ;;
+    *) warn "Unsupported OS; install WezTerm manually" ;;
   esac
 fi
 
@@ -134,6 +134,13 @@ else
   log "~/.config/nvim already exists, leaving it as-is"
 fi
 
+if [[ ! -d "$HOME/.config/wezterm" ]]; then
+  log "Cloning NJie94/wezterm into ~/.config/wezterm"
+  git clone https://github.com/NJie94/wezterm "$HOME/.config/wezterm"
+else
+  log "~/.config/wezterm already exists, leaving it as-is"
+fi
+
 link() {
   local src="$1" dest="$2"
   mkdir -p "$(dirname "$dest")"
@@ -152,13 +159,22 @@ link() {
   log "Linked $dest -> $src"
 }
 
+# Remove dangling symlinks left behind by the earlier Ghostty-based setup --
+# nothing below points at these paths anymore, so a re-run would otherwise
+# leave them orphaned forever.
+for stale in "$HOME/.config/ghostty/config.ghostty" "$HOME/.config/zsh/ghostty-tmux.zsh"; do
+  if [[ -L "$stale" ]]; then
+    log "Removing stale symlink from the old Ghostty setup: $stale"
+    rm "$stale"
+  fi
+done
+
 chmod +x "$REPO_DIR/scripts/tmux-sessionizer" "$REPO_DIR/scripts/doctor.sh"
 
 link "$HOME/.local/share/oh-my-tmux/.tmux.conf" "$HOME/.config/tmux/tmux.conf"
 link "$REPO_DIR/tmux/tmux.conf.local" "$HOME/.config/tmux/tmux.conf.local"
-link "$REPO_DIR/ghostty/config.ghostty" "$HOME/.config/ghostty/config.ghostty"
 link "$REPO_DIR/zsh/zshrc" "$HOME/.zshrc"
-link "$REPO_DIR/zsh/ghostty-tmux.zsh" "$HOME/.config/zsh/ghostty-tmux.zsh"
+link "$REPO_DIR/zsh/wezterm-tmux.zsh" "$HOME/.config/zsh/wezterm-tmux.zsh"
 
 case "$OS" in
   macos) link "$REPO_DIR/zsh/macos.zsh" "$HOME/.config/zsh/macos.zsh" ;;
@@ -166,7 +182,7 @@ case "$OS" in
 esac
 
 link "$REPO_DIR/scripts/tmux-sessionizer" "$HOME/.local/bin/tmux-sessionizer"
-link "$REPO_DIR/scripts/doctor.sh" "$HOME/.local/bin/ghostty-tmux-doctor"
+link "$REPO_DIR/scripts/doctor.sh" "$HOME/.local/bin/wezterm-tmux-doctor"
 
 if [[ ! -f "$HOME/.zshrc.local" ]]; then
   log "Creating empty ~/.zshrc.local"
@@ -180,9 +196,9 @@ tmux kill-session -t __dotfiles_bootstrap 2>/dev/null || true
 
 log "Install complete."
 log "Next steps:"
-log "  - Restart Ghostty to pick up the new config."
+log "  - Restart WezTerm to pick up the new config."
 log "  - Neovim: copy $REPO_DIR/nvim/tmux-navigator.lua.example into your nvim config's plugin directory."
 if [[ "$OS" == wsl2 ]]; then
-  log "  - Windows: edit and use $REPO_DIR/windows/ghostty-wsl.cmd.example to launch Ghostty from Windows."
+  log "  - Windows: install WezTerm natively from https://wezterm.org/installation (or 'winget install wez.wezterm') -- its bundled config already launches straight into this WSL2 distro, no launcher script needed."
 fi
-log "Run '$HOME/.local/bin/ghostty-tmux-doctor' to verify the setup (plugin clones may take a few seconds — re-run if it reports missing plugins right after install)."
+log "Run '$HOME/.local/bin/wezterm-tmux-doctor' to verify the setup (plugin clones may take a few seconds — re-run if it reports missing plugins right after install)."
