@@ -644,13 +644,13 @@ points into this repo. Any real file it would otherwise replace is backed up
 first as `<path>.bak.<timestamp>`.
 ```
 
-- [ ] **Step 2: Verify it references only files that exist, and no "ghostty" references remain**
+- [ ] **Step 2: Verify it references only files that exist, and only the one intentional "ghostty" mention remains**
 
 ```bash
 grep -oE '`[a-zA-Z0-9_./-]+`' ~/dev/dotfiles/README.md | tr -d '`' | grep -E '^(tmux|zsh|scripts|nvim)/' | sort -u | while read -r f; do test -f "$HOME/dev/dotfiles/$f" || echo "MISSING: $f"; done
-grep -in ghostty ~/dev/dotfiles/README.md; echo "grep exit: $?"
+grep -in ghostty ~/dev/dotfiles/README.md
 ```
-Expected: first command prints no output (every referenced repo-relative file path exists — note `ghostty/` and `windows/` prefixes are intentionally excluded from this check since Task 5 removed both directories). Second command prints no matches and `grep exit: 1`.
+Expected: first command prints no output (every referenced repo-relative file path exists — note `ghostty/` and `windows/` prefixes are intentionally excluded from this check since Task 5 removed both directories). Second command prints exactly one line: the "Unlike Ghostty, WezTerm has a native Windows GUI build..." sentence in the Windows section — that's an intentional, informative mention, not a leftover reference. Anything beyond that one line is a real problem.
 
 - [ ] **Step 3: Commit**
 
