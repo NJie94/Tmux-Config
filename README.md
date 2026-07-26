@@ -37,8 +37,8 @@ cd ~/dev/dotfiles
 ./install.sh
 ```
 
-Installs any missing `tmux`/`zsh`/`git`/`fzf`/WezTerm/JetBrainsMono Nerd
-Font via `apt` or `dnf` (asks for `sudo` as needed), sets up oh-my-zsh and
+Installs any missing `tmux`/`zsh`/`git`/`fzf`/JetBrainsMono Nerd Font via
+`apt` or `dnf` (asks for `sudo` as needed), sets up oh-my-zsh and
 oh-my-tmux, symlinks every config into place, and clones
 [`NJie94/nvim`](https://github.com/NJie94/nvim) to `~/.config/nvim` and
 [`NJie94/wezterm`](https://github.com/NJie94/wezterm) to `~/.config/wezterm`
@@ -70,16 +70,41 @@ sourced automatically by `zsh/zshrc` once present.
 
 Unlike Ghostty, WezTerm has a native Windows GUI build, so it no longer
 needs WSLg to run — but this setup's shell environment (tmux, zsh) still
-lives inside a WSL2 distro, and `NJie94/wezterm`'s config already launches
-straight into it.
+lives inside a WSL2 distro. Getting WezTerm to launch straight into it
+takes a few manual one-time steps on the Windows side, because native
+WezTerm reads its config from the Windows filesystem, not from anything
+inside WSL.
 
 1. Install WSL2 and a Linux distro (e.g. Ubuntu) from an elevated PowerShell:
    `wsl --install`.
-2. Inside that distro, follow the **Linux** install steps above.
+2. Inside that distro, follow the **Linux** install steps above. If zsh
+   isn't already your login shell there, set it once:
+   `chsh -s $(which zsh)`.
 3. On the Windows side, install WezTerm natively from
    [wezterm.org/installation](https://wezterm.org/installation) (or
-   `winget install wez.wezterm`). No launcher script to edit or run — open
-   WezTerm and it attaches directly to the WSL2 distro.
+   `winget install wez.wezterm`).
+4. Still on Windows, clone the same WezTerm config to where native WezTerm
+   actually reads it from — a separate clone from the one `install.sh`
+   made inside WSL, since Windows and WSL don't share this path:
+   ```powershell
+   git clone https://github.com/NJie94/wezterm $env:USERPROFILE\.config\wezterm
+   ```
+5. Make sure `TERM_PROGRAM` crosses the WSL boundary, so
+   `wezterm-tmux.zsh`'s auto-attach guard can see it. Check what `WSLENV`
+   is already set to first (`[System.Environment]::GetEnvironmentVariable('WSLENV','User')`
+   in PowerShell) and append to it rather than overwrite if it's non-empty:
+   ```powershell
+   setx WSLENV "TERM_PROGRAM/u"
+   ```
+   Restart WezTerm after this for it to take effect.
+
+**Known gap:** `NJie94/wezterm`'s Windows launch config
+(`config/launch.lua`) opens the WSL2 distro via its *default* login shell
+rather than explicitly invoking zsh, and doesn't export `TERM_PROGRAM`
+itself — steps 2 and 5 above work around that from the outside. A cleaner
+long-term fix is a small edit to that repo's Windows `default_prog` (e.g.
+`{"wsl.exe", "-d", "Ubuntu", "--", "zsh", "-l"}`), which is out of scope
+here since this repo doesn't modify `NJie94/wezterm`.
 
 ## Keymap
 

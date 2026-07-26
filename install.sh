@@ -62,7 +62,7 @@ if ! command -v wezterm >/dev/null 2>&1; then
   case "$OS" in
     macos) brew install --cask wezterm ;;
     linux) linux_pkg_install wezterm || warn "Install WezTerm manually: https://wezterm.org/installation" ;;
-    wsl2) linux_pkg_install wezterm || warn "Install WezTerm manually inside this WSL2 distro: https://wezterm.org/installation" ;;
+    wsl2) log "WezTerm runs natively on Windows, not inside this WSL2 distro -- see the README's Windows section for the native-install and config-sync steps." ;;
     *) warn "Unsupported OS; install WezTerm manually" ;;
   esac
 fi
@@ -162,7 +162,7 @@ link() {
 # Remove dangling symlinks left behind by the earlier Ghostty-based setup --
 # nothing below points at these paths anymore, so a re-run would otherwise
 # leave them orphaned forever.
-for stale in "$HOME/.config/ghostty/config.ghostty" "$HOME/.config/zsh/ghostty-tmux.zsh"; do
+for stale in "$HOME/.config/ghostty/config.ghostty" "$HOME/.config/zsh/ghostty-tmux.zsh" "$HOME/.local/bin/ghostty-tmux-doctor"; do
   if [[ -L "$stale" ]]; then
     log "Removing stale symlink from the old Ghostty setup: $stale"
     rm "$stale"
@@ -199,6 +199,6 @@ log "Next steps:"
 log "  - Restart WezTerm to pick up the new config."
 log "  - Neovim: copy $REPO_DIR/nvim/tmux-navigator.lua.example into your nvim config's plugin directory."
 if [[ "$OS" == wsl2 ]]; then
-  log "  - Windows: install WezTerm natively from https://wezterm.org/installation (or 'winget install wez.wezterm') -- its bundled config already launches straight into this WSL2 distro, no launcher script needed."
+  log "  - Windows: install WezTerm natively from https://wezterm.org/installation (or 'winget install wez.wezterm'), then see this README's Windows section to clone the WezTerm config to the Windows side and wire up TERM_PROGRAM/WSLENV so it launches straight into this distro."
 fi
 log "Run '$HOME/.local/bin/wezterm-tmux-doctor' to verify the setup (plugin clones may take a few seconds — re-run if it reports missing plugins right after install)."

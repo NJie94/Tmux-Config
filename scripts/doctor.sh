@@ -44,9 +44,17 @@ is_symlink_into_repo() {
   [[ -L "$path" ]] && [[ "$(resolve_path "$path")" == "$REPO_DIR/$repo_rel" ]]
 }
 
+is_wsl2() {
+  [[ -f /proc/version ]] && grep -qiE 'microsoft|wsl' /proc/version 2>/dev/null
+}
+
 check "tmux >= 3.2 installed" \
   '[[ -n "$(command -v tmux)" ]] && [[ "$(tmux -V | grep -oE "[0-9]+" | head -1)" -ge 3 ]]'
-check "wezterm installed" 'command -v wezterm >/dev/null 2>&1'
+if is_wsl2; then
+  check "wezterm.exe reachable from WSL (native Windows install)" 'command -v wezterm.exe >/dev/null 2>&1'
+else
+  check "wezterm installed" 'command -v wezterm >/dev/null 2>&1'
+fi
 check "zsh installed" 'command -v zsh >/dev/null 2>&1'
 check "fzf installed" 'command -v fzf >/dev/null 2>&1'
 check "git installed" 'command -v git >/dev/null 2>&1'
