@@ -509,7 +509,7 @@ tmux_conf_uninstall_plugins_on_reload=true
 # #     do not write below this line
 
 
-# --- Nicholas clean Ghostty + Oh My Tmux theme --------------------------------
+# --- Nicholas clean WezTerm + Oh My Tmux theme --------------------------------
 # Keep the upstream Oh My Tmux tmux.conf untouched.
 
 # Behavior and compatibility.
@@ -529,9 +529,9 @@ set -g window-status-separator '' #!important
 
 %if #{>=:#{version},3.2}
 set -g extended-keys on #!important
-set -as terminal-features ',xterm-ghostty:RGB:extkeys:focus:clipboard:hyperlinks:sync' #!important
+set -as terminal-features ',xterm-256color:RGB:extkeys:focus:clipboard:hyperlinks:sync' #!important
 %else
-set -as terminal-overrides ',xterm-ghostty:Tc' #!important
+set -as terminal-overrides ',xterm-256color:Tc' #!important
 %endif
 
 # Soft Catppuccin-inspired palette.
@@ -555,7 +555,7 @@ tmux_conf_theme_colour_16="#f38ba8"  # alert red
 tmux_conf_theme_colour_17="#cdd6f4"  # text
 
 # Terminal title: remove host/session/window duplication and unsupported glyphs.
-tmux_conf_theme_terminal_title="Ghostty"
+tmux_conf_theme_terminal_title="WezTerm"
 
 # Pane borders.
 tmux_conf_theme_pane_border_style=thin
@@ -627,7 +627,7 @@ tmux_conf_theme_pairing="PAIR"
 tmux_conf_theme_mouse=""
 tmux_conf_theme_root="ROOT"
 tmux_conf_theme_synchronized="SYNC"
-# --- End Nicholas clean Ghostty + Oh My Tmux theme ----------------------------
+# --- End Nicholas clean WezTerm + Oh My Tmux theme ----------------------------
 
 
 # --- Nicholas: prefix, splits, shell -------------------------------------------
