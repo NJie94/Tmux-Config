@@ -46,7 +46,7 @@ is_symlink_into_repo() {
 
 check "tmux >= 3.2 installed" \
   '[[ -n "$(command -v tmux)" ]] && [[ "$(tmux -V | grep -oE "[0-9]+" | head -1)" -ge 3 ]]'
-check "ghostty installed" 'command -v ghostty >/dev/null 2>&1'
+check "wezterm installed" 'command -v wezterm >/dev/null 2>&1'
 check "zsh installed" 'command -v zsh >/dev/null 2>&1'
 check "fzf installed" 'command -v fzf >/dev/null 2>&1'
 check "git installed" 'command -v git >/dev/null 2>&1'
@@ -70,12 +70,11 @@ check "~/.config/tmux/tmux.conf is a symlink to oh-my-tmux" \
   '[[ -L "$HOME/.config/tmux/tmux.conf" ]] && [[ "$(resolve_path "$HOME/.config/tmux/tmux.conf")" == "$HOME/.local/share/oh-my-tmux/.tmux.conf" ]]'
 check "~/.config/tmux/tmux.conf.local is a symlink into the dotfiles repo" \
   'is_symlink_into_repo "$HOME/.config/tmux/tmux.conf.local" "tmux/tmux.conf.local"'
-check "~/.config/ghostty/config.ghostty is a symlink into the dotfiles repo" \
-  'is_symlink_into_repo "$HOME/.config/ghostty/config.ghostty" "ghostty/config.ghostty"'
+check "~/.config/wezterm exists and is a git checkout" '[[ -d "$HOME/.config/wezterm/.git" ]]'
 check "~/.zshrc is a symlink into the dotfiles repo" \
   'is_symlink_into_repo "$HOME/.zshrc" "zsh/zshrc"'
-check "~/.config/zsh/ghostty-tmux.zsh is a symlink into the dotfiles repo" \
-  'is_symlink_into_repo "$HOME/.config/zsh/ghostty-tmux.zsh" "zsh/ghostty-tmux.zsh"'
+check "~/.config/zsh/wezterm-tmux.zsh is a symlink into the dotfiles repo" \
+  'is_symlink_into_repo "$HOME/.config/zsh/wezterm-tmux.zsh" "zsh/wezterm-tmux.zsh"'
 check "~/.config/nvim exists and is a git checkout" '[[ -d "$HOME/.config/nvim/.git" ]]'
 check "tmux-sessionizer on PATH" 'command -v tmux-sessionizer >/dev/null 2>&1'
 check "~/.zshrc.local exists" '[[ -f "$HOME/.zshrc.local" ]]'
