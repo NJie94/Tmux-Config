@@ -58,6 +58,11 @@ ensure_cmd fzf
 ensure_cmd curl
 ensure_cmd unzip
 
+chmod +x "$REPO_DIR/scripts/install-zsh-stack.sh"
+
+log "Installing and verifying the Zsh environment"
+"$REPO_DIR/scripts/install-zsh-stack.sh"
+
 if ! command -v wezterm >/dev/null 2>&1; then
   case "$OS" in
     macos) brew install --cask wezterm ;;
