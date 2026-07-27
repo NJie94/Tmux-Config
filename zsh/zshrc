@@ -13,16 +13,12 @@ export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="powerlevel10k/powerlevel10k"
 
 plugins=(git
- extract
- thefuck
- jsontools
- colored-man-pages
  zsh-autosuggestions
  zsh-syntax-highlighting
  zsh-history-substring-search
  you-should-use
- nvm
- debian
+ pay-respect
+ tv
  fzf)
 
 source $ZSH/oh-my-zsh.sh
