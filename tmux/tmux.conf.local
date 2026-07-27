@@ -14,7 +14,7 @@
 # /!\ this disables some of Oh my tmux! bindings described in README.md
 #   - true
 #   - false (default)
-tmux_conf_preserve_stock_bindings=false
+tmux_conf_preserve_stock_bindings=true
 
 
 # -- session creation ----------------------------------------------------------
@@ -508,7 +508,6 @@ tmux_conf_uninstall_plugins_on_reload=true
 # # /!\ do not remove the previous line
 # #     do not write below this line
 
-
 # --- Nicholas clean WezTerm + Oh My Tmux theme --------------------------------
 # Keep the upstream Oh My Tmux tmux.conf untouched.
 
@@ -628,24 +627,6 @@ tmux_conf_theme_mouse=""
 tmux_conf_theme_root="ROOT"
 tmux_conf_theme_synchronized="SYNC"
 # --- End Nicholas clean WezTerm + Oh My Tmux theme ----------------------------
-
-
-# --- Nicholas: prefix, splits, shell -------------------------------------------
-
-# Ctrl+b requires an awkward stretch. Ctrl+a is already set as prefix2 above
-# (oh-my-tmux default), but that collides with zsh/readline's "move to
-# beginning of line" — bad since we're switching the default shell to zsh.
-# Use Ctrl+Space instead: nothing in the shell claims it.
-set -gu prefix2
-unbind C-b
-unbind C-a
-set -g prefix C-Space
-bind C-Space send-prefix #!important
-
-# Ergonomic split bindings: backslash for side-by-side, dash for top/bottom.
-# (% and _ still work too, unchanged.)
-bind \\ split-window -h -c "#{pane_current_path}" #!important
-bind -  split-window -v -c "#{pane_current_path}" #!important
 
 # Default shell: zsh (oh-my-zsh) instead of bash.
 set -g default-shell /usr/bin/zsh #!important
