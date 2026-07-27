@@ -63,6 +63,23 @@ check "oh-my-zsh present" '[[ -d "$HOME/.oh-my-zsh" ]]'
 check "powerlevel10k theme installed" '[[ -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]]'
 check "zsh-autosuggestions plugin installed" '[[ -d "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]]'
 check "zsh-syntax-highlighting plugin installed" '[[ -d "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]]'
+check "zsh-history-substring-search plugin installed" \
+  '[[ -d "$HOME/.oh-my-zsh/custom/plugins/zsh-history-substring-search" ]]'
+
+check "you-should-use plugin installed" \
+  '[[ -d "$HOME/.oh-my-zsh/custom/plugins/you-should-use" ]]'
+
+check "fzf installed" \
+  'command -v fzf >/dev/null 2>&1'
+
+check "fzf supports zsh integration" \
+  'fzf --zsh >/dev/null 2>&1'
+
+check "fd installed" \
+  'command -v fd >/dev/null 2>&1'
+
+check "pay-respects installed" \
+  'command -v pay-respects >/dev/null 2>&1'
 
 # oh-my-tmux installs TPM plugins under dirname($TMUX_CONF)/plugins. This
 # repo's install.sh always symlinks ~/.config/tmux/tmux.conf, so that path is
