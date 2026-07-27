@@ -1,0 +1,5 @@
+# Force LF everywhere regardless of the checking-out machine's core.autocrlf
+# setting. This repo is sourced by zsh/bash on Linux/macOS/WSL2 -- a CRLF
+# line ending breaks `source`/`[[ -r ]]` paths and can corrupt quoted strings
+# (see the ~/.zshrc.local breakage this was written to prevent).
+* text=auto eol=lf

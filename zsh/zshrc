@@ -22,11 +22,22 @@ if command -v fd >/dev/null 2>&1; then
   export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
 fi
 
+# --style=full needs fzf >= 0.55.0; older fzf (e.g. from a system package
+# manager shadowing the managed install) rejects it outright and takes the
+# whole shell startup down with it, so only add it when supported.
+_fzf_style_opt=""
+if command -v fzf >/dev/null 2>&1; then
+  autoload -Uz is-at-least
+  if is-at-least 0.55.0 "$(fzf --version 2>/dev/null | awk '{print $1}')"; then
+    _fzf_style_opt="--style=full"
+  fi
+fi
+
 # Catppuccin Mocha-inspired fzf interface.
 export FZF_DEFAULT_OPTS="
   --height=85%
   --layout=reverse
-  --style=full
+  $_fzf_style_opt
   --border=rounded
   --padding=1,2
   --margin=1
@@ -62,6 +73,7 @@ export FZF_DEFAULT_OPTS="
   --color='scrollbar:#585b70'
   --color='preview-border:#89b4fa'
 "
+unset _fzf_style_opt
 
 # Ctrl+T: select files with preview.
 export FZF_CTRL_T_OPTS="

@@ -50,11 +50,23 @@ install_oh_my_zsh() {
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 }
 
+# zsh/zshrc's FZF_DEFAULT_OPTS uses --style=full (added in fzf 0.55.0), which
+# is newer than --zsh (added in 0.48.0). A system-packaged fzf can pass the
+# --zsh check yet still be too old for --style, so both must be verified --
+# otherwise the shell breaks at startup with "unknown option: --style=full".
+fzf_supports_style() {
+  command -v fzf >/dev/null 2>&1 || return 1
+  local current
+  current="$(fzf --version 2>/dev/null | awk '{print $1}')"
+  [[ -n "$current" ]] || return 1
+  [[ "$(printf '%s\n%s\n' "0.55.0" "$current" | sort -V | head -1)" == "0.55.0" ]]
+}
+
 install_fzf() {
   local install_dir="$HOME/.local/share/fzf"
   local binary_link="$HOME/.local/bin/fzf"
 
-  if command -v fzf >/dev/null 2>&1 && fzf --zsh >/dev/null 2>&1; then
+  if command -v fzf >/dev/null 2>&1 && fzf --zsh >/dev/null 2>&1 && fzf_supports_style; then
     log "Found compatible fzf: $(fzf --version)"
     return 0
   fi
@@ -71,6 +83,7 @@ install_fzf() {
 
   command -v fzf >/dev/null 2>&1 || die "fzf installation completed but the binary is not on PATH"
   fzf --zsh >/dev/null 2>&1 || die "installed fzf does not provide zsh integration"
+  fzf_supports_style || die "installed fzf does not support --style (need >= 0.55.0)"
 }
 
 install_fd() {
@@ -109,6 +122,10 @@ install_fd() {
   command -v fd >/dev/null 2>&1 || die "fd installation completed but fd is not on PATH"
 }
 
+# pay-respects is a nice-to-have (not one of the plugins this stack must
+# provide), so a failure here must never abort the rest of the install --
+# unlike the die()-based checks above, every path through this function
+# ends in a warning rather than a hard failure.
 install_pay_respects() {
   if command -v pay-respects >/dev/null 2>&1; then
     log "Found pay-respects"
@@ -117,20 +134,35 @@ install_pay_respects() {
 
   case "$OS" in
     macos)
-      command -v brew >/dev/null 2>&1 || die "Homebrew is required to install pay-respects on macOS"
+      if ! command -v brew >/dev/null 2>&1; then
+        warn "Homebrew not found; skipping pay-respects (optional)"
+        return 0
+      fi
       log "Installing pay-respects"
-      brew install timescam/homebrew-tap/pay-respects
+      brew install timescam/homebrew-tap/pay-respects ||
+        warn "Failed to install pay-respects; continuing without it"
       ;;
 
     linux)
+      # The upstream installer unpacks a .tar.zst release archive, which
+      # needs zstd on PATH -- make a best-effort attempt to have it first.
+      if ! command -v zstd >/dev/null 2>&1; then
+        if command -v apt-get >/dev/null 2>&1; then
+          sudo apt-get update -y && sudo apt-get install -y zstd || true
+        elif command -v dnf >/dev/null 2>&1; then
+          sudo dnf install -y zstd || true
+        fi
+      fi
+
       log "Installing pay-respects"
-      curl -sSfL https://raw.githubusercontent.com/iffse/pay-respects/main/install.sh | sh
+      curl -sSfL https://raw.githubusercontent.com/iffse/pay-respects/main/install.sh | sh ||
+        warn "pay-respects installer failed; continuing without it"
       ;;
   esac
 
   hash -r
-  command -v pay-respects >/dev/null 2>&1 || \
-    die "pay-respects installation completed but the binary is not on PATH"
+  command -v pay-respects >/dev/null 2>&1 ||
+    warn "pay-respects is not on PATH; it's optional and can be installed later from https://github.com/iffse/pay-respects"
 }
 
 verify_installation() {
@@ -169,7 +201,12 @@ verify_installation() {
 
   check_command fzf
   check_command fd
-  check_command pay-respects
+
+  if command -v pay-respects >/dev/null 2>&1; then
+    log "Verified command: pay-respects"
+  else
+    warn "pay-respects not found (optional correction tool -- doesn't count against the check)"
+  fi
 
   (( failures == 0 )) || die "$failures zsh dependency check(s) failed"
 }
