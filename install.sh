@@ -52,98 +52,11 @@ ensure_cmd() {
 }
 
 ensure_cmd tmux
-ensure_cmd zsh
 ensure_cmd git
-ensure_cmd fzf
-ensure_cmd curl
-ensure_cmd unzip
-
-chmod +x "$REPO_DIR/scripts/install-zsh-stack.sh"
-
-log "Installing and verifying the Zsh environment"
-"$REPO_DIR/scripts/install-zsh-stack.sh"
-
-if ! command -v wezterm >/dev/null 2>&1; then
-  case "$OS" in
-    macos) brew install --cask wezterm ;;
-    linux) linux_pkg_install wezterm || warn "Install WezTerm manually: https://wezterm.org/installation" ;;
-    wsl2) log "WezTerm runs natively on Windows, not inside this WSL2 distro -- see the README's Windows section for the native-install and config-sync steps." ;;
-    *) warn "Unsupported OS; install WezTerm manually" ;;
-  esac
-fi
-
-font_installed() {
-  # Plain grep (no -q) reads all of its input before exiting, so it never
-  # SIGPIPEs the producer mid-stream -- with `pipefail` on, a `grep -q` that
-  # quits early kills fc-list/ls with SIGPIPE and pipefail then reports that
-  # as a pipeline failure even though the match was found.
-  fc-list 2>/dev/null | grep -i "JetBrainsMono Nerd Font" >/dev/null && return 0
-  [[ "$OS" == macos ]] && ls "$HOME/Library/Fonts" 2>/dev/null | grep -i "JetBrainsMono" >/dev/null && return 0
-  return 1
-}
-
-install_linux_font() {
-  mkdir -p "$HOME/.local/share/fonts"
-  curl -fLo /tmp/JetBrainsMono.zip \
-    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip || return 1
-  unzip -o /tmp/JetBrainsMono.zip -d "$HOME/.local/share/fonts" >/dev/null || return 1
-  fc-cache -f "$HOME/.local/share/fonts" >/dev/null 2>&1 || true
-  return 0
-}
-
-if ! font_installed; then
-  log "Installing JetBrainsMono Nerd Font"
-  case "$OS" in
-    macos) brew install --cask font-jetbrains-mono-nerd-font ;;
-    linux|wsl2)
-      # Font is purely cosmetic -- a network hiccup, a renamed release
-      # asset, or missing curl/unzip shouldn't abort the whole install.
-      install_linux_font ||
-        warn "Failed to install JetBrainsMono Nerd Font; continuing without it. Install manually from https://www.nerdfonts.com/ if desired."
-      ;;
-  esac
-fi
-
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-  log "Installing oh-my-zsh"
-  RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-fi
-
-ZSH_CUSTOM_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-if [[ ! -d "$ZSH_CUSTOM_DIR/plugins/zsh-autosuggestions" ]]; then
-  log "Installing zsh-autosuggestions"
-  git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions \
-    "$ZSH_CUSTOM_DIR/plugins/zsh-autosuggestions"
-fi
-if [[ ! -d "$ZSH_CUSTOM_DIR/plugins/zsh-syntax-highlighting" ]]; then
-  log "Installing zsh-syntax-highlighting"
-  git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting \
-    "$ZSH_CUSTOM_DIR/plugins/zsh-syntax-highlighting"
-fi
-if [[ ! -d "$ZSH_CUSTOM_DIR/themes/powerlevel10k" ]]; then
-  log "Installing powerlevel10k theme"
-  git clone --depth 1 https://github.com/romkatv/powerlevel10k.git \
-    "$ZSH_CUSTOM_DIR/themes/powerlevel10k"
-fi
 
 if [[ ! -d "$HOME/.local/share/oh-my-tmux" ]]; then
   log "Installing oh-my-tmux"
   git clone --depth 1 https://github.com/gpakosz/.tmux.git "$HOME/.local/share/oh-my-tmux"
-fi
-
-if [[ ! -d "$HOME/.config/nvim" ]]; then
-  log "Cloning NJie94/nvim into ~/.config/nvim"
-  git clone https://github.com/NJie94/nvim "$HOME/.config/nvim"
-else
-  log "~/.config/nvim already exists, leaving it as-is"
-fi
-
-if [[ ! -d "$HOME/.config/wezterm" ]]; then
-  log "Cloning NJie94/wezterm into ~/.config/wezterm"
-  git clone https://github.com/NJie94/wezterm "$HOME/.config/wezterm"
-else
-  log "~/.config/wezterm already exists, leaving it as-is"
 fi
 
 link() {
@@ -164,46 +77,17 @@ link() {
   log "Linked $dest -> $src"
 }
 
-# Remove dangling symlinks left behind by the earlier Ghostty-based setup --
-# nothing below points at these paths anymore, so a re-run would otherwise
-# leave them orphaned forever.
-for stale in "$HOME/.config/ghostty/config.ghostty" "$HOME/.config/zsh/ghostty-tmux.zsh" "$HOME/.local/bin/ghostty-tmux-doctor"; do
-  if [[ -L "$stale" ]]; then
-    log "Removing stale symlink from the old Ghostty setup: $stale"
-    rm "$stale"
-  fi
-done
-
 chmod +x "$REPO_DIR/scripts/tmux-sessionizer" "$REPO_DIR/scripts/doctor.sh"
 
 link "$HOME/.local/share/oh-my-tmux/.tmux.conf" "$HOME/.config/tmux/tmux.conf"
 link "$REPO_DIR/tmux/tmux.conf.local" "$HOME/.config/tmux/tmux.conf.local"
-link "$REPO_DIR/zsh/zshrc" "$HOME/.zshrc"
-link "$REPO_DIR/zsh/wezterm-tmux.zsh" "$HOME/.config/zsh/wezterm-tmux.zsh"
-
-case "$OS" in
-  macos) link "$REPO_DIR/zsh/macos.zsh" "$HOME/.config/zsh/macos.zsh" ;;
-  linux|wsl2) link "$REPO_DIR/zsh/linux.zsh" "$HOME/.config/zsh/linux.zsh" ;;
-esac
-
 link "$REPO_DIR/scripts/tmux-sessionizer" "$HOME/.local/bin/tmux-sessionizer"
-link "$REPO_DIR/scripts/doctor.sh" "$HOME/.local/bin/wezterm-tmux-doctor"
-
-if [[ ! -f "$HOME/.zshrc.local" ]]; then
-  log "Creating empty ~/.zshrc.local"
-  touch "$HOME/.zshrc.local"
-fi
+link "$REPO_DIR/scripts/doctor.sh" "$HOME/.local/bin/tmux-config-doctor"
 
 log "Triggering oh-my-tmux's automatic plugin installation"
-tmux new-session -d -s __dotfiles_bootstrap -c /tmp 2>/dev/null || true
+tmux new-session -d -s __tmux_config_bootstrap -c /tmp 2>/dev/null || true
 sleep 3
-tmux kill-session -t __dotfiles_bootstrap 2>/dev/null || true
+tmux kill-session -t __tmux_config_bootstrap 2>/dev/null || true
 
 log "Install complete."
-log "Next steps:"
-log "  - Restart WezTerm to pick up the new config."
-log "  - Neovim: copy $REPO_DIR/nvim/tmux-navigator.lua.example into your nvim config's plugin directory."
-if [[ "$OS" == wsl2 ]]; then
-  log "  - Windows: install WezTerm natively from https://wezterm.org/installation (or 'winget install wez.wezterm'), then see this README's Windows section to clone the WezTerm config to the Windows side and wire up TERM_PROGRAM/WSLENV so it launches straight into this distro."
-fi
-log "Run '$HOME/.local/bin/wezterm-tmux-doctor' to verify the setup (plugin clones may take a few seconds — re-run if it reports missing plugins right after install)."
+log "Run '$HOME/.local/bin/tmux-config-doctor' to verify the setup (plugin clones may take a few seconds -- re-run if it reports missing plugins right after install)."
