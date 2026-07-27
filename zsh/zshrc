@@ -18,8 +18,7 @@ plugins=(git
  zsh-history-substring-search
  you-should-use
  pay-respect
- tv
- fzf)
+ tv)
 
 source $ZSH/oh-my-zsh.sh
 
