@@ -125,14 +125,3 @@ source "$ZSH/oh-my-zsh.sh"
 if command -v pay-respects >/dev/null 2>&1; then
   eval "$(pay-respects zsh --alias)"
 fi
-
-# OS-specific configuration.
-[[ -r "$HOME/.config/zsh/linux.zsh" ]] &&
-  source "$HOME/.config/zsh/linux.zsh"
-
-[[ -r "$HOME/.config/zsh/macos.zsh" ]] &&
-  source "$HOME/.config/zsh/macos.zsh"
-
-# Machine-specific and private configuration.
-[[ -r "$HOME/.zshrc.local" ]] &&
-  source "$HOME/.zshrc.local"
